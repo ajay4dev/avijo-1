@@ -3,6 +3,8 @@ const doctorProfileModel = require("../models/doctorProfile");
 const bcrypt = require("bcrypt");
 const { sendOTPEmail } = require("../helper/emailOtp");
 const { sendOTP } = require("../helper/sendotp");
+const jwt = require("jsonwebtoken");
+
 // const cloudinary = require('../config/cloudinaryConfig');
 
 const generateOTP = () => {

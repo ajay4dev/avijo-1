@@ -4,6 +4,9 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const userRoutes = require("./routes/userRoutes");
 const labAuthRoutes = require("./routes/lapAuthRoutes");
+const hppAuthRoutes = require ("./routes/hppAuthRoute")
+const doctorConsultationRoutes = require ("./routes/doctorConsultationRoutes")
+
 const multer = require("multer");
 const cloudinary = require("cloudinary").v2;
 
@@ -44,6 +47,10 @@ app.post("/upload", upload.single("image"), async (req, res) => {
 
 app.use("/user", userRoutes);
 app.use("/labAuth", labAuthRoutes);
+app.use("/hppAuth", hppAuthRoutes);
+app.use("/ConsultationAuth", doctorConsultationRoutes);
+
+
 
 app.get("/", (req, res) => {
   res.json({

@@ -25,8 +25,8 @@ const router = express.Router();
 
 // router.post("/login", loginApi)
 
-router.post("/register", registerUser);
-router.post("/verify", verifyOTP);
+// router.post("/register", registerUser);
+// router.post("/verify", verifyOTP);
 router.post("/login", loginUser);
 router.post("/verifyLogin", verifyOTPAndLogin);
 

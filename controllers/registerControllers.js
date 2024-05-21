@@ -51,43 +51,48 @@ const jwt = require("jsonwebtoken");
 //   }
 // };
 
-// const registerUser = async (req, res) => {
-//   try {
-//     const {  mobileNumber } = req.body;
+const registerUser = async (req, res) => {
+  try {
+    const { 
+      // fullName, email, dateOfBirth,
+       mobileNumber } = req.body;
 
-//     const existingUser = await register.findOne({ mobileNumber });
+    const existingUser = await register.findOne({ mobileNumber });
 
-//     if (existingUser) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "User already exists. Please log in.",
-//       });
-//     }
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "User already exists. Please log in.",
+      });
+    }
 
-//     const registrationOTP = Math.floor(100000 + Math.random() * 900000);
-//     const hashOTP = await bcrypt.hash(registrationOTP.toString(), 10);
+    const registrationOTP = Math.floor(100000 + Math.random() * 900000);
+    const hashOTP = await bcrypt.hash(registrationOTP.toString(), 10);
 
-//     const newUser = new register({
-//       mobileNumber,
-//       otp: hashOTP,
-//     });
+    const newUser = new register({
+      // fullName,
+      // email,
+      // dateOfBirth,
+      mobileNumber,
+      otp: hashOTP,
+    });
 
-//     await newUser.save();
-//     await sendOTP(mobileNumber, registrationOTP);
+    await newUser.save();
+    await sendOTP(mobileNumber, registrationOTP);
 
-//     return res.status(200).json({
-//       success: true,
-//       message: "User registered successfully",
-//       data: newUser,
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     return res.status(500).json({
-//       success: false,
-//       message: error.message || "Internal server error",
-//     });
-//   }
-// };
+    return res.status(200).json({
+      success: true,
+      message: "User registered successfully",
+      data: newUser,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Internal server error",
+    });
+  }
+};
 
 const loginUser = async (req, res) => {
   try {
@@ -95,12 +100,12 @@ const loginUser = async (req, res) => {
 
     const existingUser = await register.findOne({ mobileNumber });
 
-    // if (!existingUser) {
-    //   return res.status(404).json({
-    //     success: false,
-    //     message: "User not found. Please register.",
-    //   });
-    // }
+    if (!existingUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found. Please register.",
+      });
+    }
 
     const loginOTP = Math.floor(100000 + Math.random() * 900000);
     const hashOTP = await bcrypt.hash(loginOTP.toString(), 10);
@@ -123,41 +128,49 @@ const loginUser = async (req, res) => {
 };
 
 
-// const verifyOTP = async (req, res) => {
-//   try {
-//     const { mobileNumber, otp } = req.body;
+const verifyOTP = async (req, res) => {
+  try {
+    const { fullName, email, dateOfBirth, mobileNumber, otp } = req.body;
 
-//     const user = await register.findOne({ mobileNumber });
+    const user = await register.findOne({ mobileNumber });
 
-//     if (!user) {
-//       return res
-//         .status(404)
-//         .json({ success: false, message: "User not found" });
-//     }
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
 
-//     // Compare the provided OTP with the hashed OTP stored in the database
-//     isOTPMatch = await bcrypt.compare(otp.toString(), user.otp);
-//     if (isOTPMatch) {
-//       return res
-//         .status(200)
-//         .json({ success: true, message: "OTP verification successful" });
-//     } else {
-//       return res.status(400).json({ success: false, message: "Invalid OTP" });
-//     }
-//   } catch (error) {
-//     console.error(error);
-//     return res.status(500).json({
-//       success: false,
-//       message: error.message || "Internal server error",
-//     });
-//   }
-// };
+    // Compare the provided OTP with the hashed OTP stored in the database
+    const isOTPMatch = await bcrypt.compare(otp.toString(), user.otp);
+
+    if (isOTPMatch) {
+      // OTP verified, update user details
+      user.fullName = fullName;
+      user.email = email;
+      user.dateOfBirth = dateOfBirth;
+      await user.save();
+
+      return res.status(200).json({
+        success: true,
+        message: "OTP verification successful",
+        data: user,
+      });
+    } else {
+      return res.status(400).json({ success: false, message: "Invalid OTP" });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Internal server error",
+    });
+  }
+};
+
 
 const verifyOTPAndLogin = async (req, res) => {
   try {
-    const {mobileNumber, otp, fullName, email, dateOfBirth  } = req.body;
+    const { mobileNumber, otp } = req.body;
 
-    const existingUser = await register.findByIdAndDelete({ mobileNumber });
+    const existingUser = await register.findOne({ mobileNumber });
 
     if (!existingUser) {
       return res.status(404).json({
@@ -166,28 +179,25 @@ const verifyOTPAndLogin = async (req, res) => {
       });
     }
 
-    // Compare the provided OTP with the hashed OTP in the database
-    const isMatch = await bcrypt.compare(otp.toString(), existingUser.otp);
+    const isOTPValid = await bcrypt.compare(otp, existingUser.otp);
 
-    if (!isMatch) {
+    if (!isOTPValid) {
       return res.status(400).json({
         success: false,
-        message: "Invalid OTP",
+        message: "Invalid OTP. Please try again.",
       });
     }
 
-    // If OTP is verified successfully, save additional user information
-    // Assuming fullName and email are also sent in the request body
-    // const { fullName, email , dateOfBirth } = req.body;
-    existingUser.fullName = fullName;
-    existingUser.email = email;
-    existingUser.dateOfBirth = dateOfBirth;
-
-    await existingUser.save();
+    const token = jwt.sign(
+      { userId: existingUser._id, mobileNumber: existingUser.mobileNumber },
+      process.env.JWT_SECRET_KEY, // Use an environment variable for the secret key
+      { expiresIn: '1h' } // Token expiration time
+    );
 
     return res.status(200).json({
       success: true,
-      message: "OTP verified successfully",
+      message: "Login successful",
+      token,
     });
   } catch (error) {
     console.error(error);
@@ -199,9 +209,10 @@ const verifyOTPAndLogin = async (req, res) => {
 };
 
 
+
 module.exports = {
-  // registerUser,
-  // verifyOTP,
+  registerUser,
+  verifyOTP,
   loginUser,
   verifyOTPAndLogin
 };

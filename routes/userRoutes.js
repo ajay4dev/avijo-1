@@ -2,6 +2,8 @@ const express = require("express");
 const {
   registerUser,
   verifyOTP,
+  loginUser,
+  verifyOTPAndLogin,
 } = require("../controllers/registerControllers");
 const {
   pharmacyCreate,
@@ -25,6 +27,11 @@ const router = express.Router();
 
 router.post("/register", registerUser);
 router.post("/verify", verifyOTP);
+router.post("/login", loginUser);
+router.post("/verifyLogin", verifyOTPAndLogin);
+
+
+
 
 router.post("/pharmacyCreate", pharmacyCreate);
 router.post("/pharmacyVerify", pharmacyVerify);

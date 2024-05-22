@@ -9,7 +9,6 @@ const loginSchema = new Schema(
     email: {
       type: String,
       unique: true,
-      sparse: true 
     },
     dateOfBirth: {
       type: Date,

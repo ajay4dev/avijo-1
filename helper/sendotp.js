@@ -7,7 +7,7 @@ const sendOTP = async (to, otp) => {
     const message = await client.messages.create({
       body: `Please Verify the mobile number with given OTP. Your OTP is: ${otp}`,
       from: process.env.TWILIO_PHONE_NUMBER,
-      to: `+91${to}`,
+      to: to,
     });
 
     console.log(`OTP sent successfully. SID: ${message.sid}`);

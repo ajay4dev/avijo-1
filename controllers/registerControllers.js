@@ -53,13 +53,17 @@ const jwt = require("jsonwebtoken");
 
 const registerUser = async (req, res) => {
   try {
-    const {
-      // fullName, email, dateOfBirth,
-      mobileNumber,
-    } = req.body;
+    const { mobileNumber } = req.body;
 
+    if (!mobileNumber) {
+      return res.status(400).json({
+        success: false,
+        message: "Mobile number is required.",
+      });
+    }
+
+    // Check for existing user with the same mobile number
     const existingUser = await register.findOne({ mobileNumber });
-
     if (existingUser) {
       return res.status(400).json({
         success: false,
@@ -67,18 +71,20 @@ const registerUser = async (req, res) => {
       });
     }
 
+    // Generate and hash the OTP
     const registrationOTP = Math.floor(100000 + Math.random() * 900000);
     const hashOTP = await bcrypt.hash(registrationOTP.toString(), 10);
 
+    // Create the new user object
     const newUser = new register({
-      // fullName,
-      // email,
-      // dateOfBirth,
       mobileNumber,
       otp: hashOTP,
     });
 
+    // Save the new user to the database
     await newUser.save();
+
+    // Send the OTP to the user's mobile number
     await sendOTP(mobileNumber, registrationOTP);
 
     return res.status(200).json({
@@ -88,12 +94,23 @@ const registerUser = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
+
+    // // Handle MongoDB duplicate key error
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern)[0];
+      return res.status(400).json({
+        success: false,
+        message: `Duplicate value for field: ${field}`,
+      });
+    }
+
     return res.status(500).json({
       success: false,
       message: error.message || "Internal server error",
     });
   }
 };
+
 
 const loginUser = async (req, res) => {
   try {

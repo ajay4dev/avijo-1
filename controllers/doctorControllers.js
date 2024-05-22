@@ -20,7 +20,7 @@ const doctorCreate = async (req, res) => {
       });
     }
 
-    const userExists = await pharmacyModel.findOne({ emailId, mobileNumber });
+    const userExists = await doctorModel.findOne({ emailId, mobileNumber });
     if (userExists) {
       return res.status(400).send({
         message: "User already exists",
@@ -40,7 +40,7 @@ const doctorCreate = async (req, res) => {
     await sendOTP(mobileNumber, mobileOTP);
 
     // Create a new user object with only essential fields
-    const newUser = new pharmacyModel({
+    const newUser = new doctorModel({
       fullName,
       emailId,
       password: hashedPassword,
@@ -95,7 +95,7 @@ const doctorVerify = async (req, res) => {
     const { emailId, emailOTP, mobileNumber, mobileOTP } = req.body;
 
     // Find the user by emailId and mobileNumber
-    const user = await pharmacyModel.findOne({ emailId, mobileNumber });
+    const user = await doctorModel.findOne({ emailId, mobileNumber });
 
     if (!user) {
       return res.status(404).send({
@@ -138,7 +138,7 @@ const doctorLogin = async (req, res) => {
       });
     }
 
-    const user = await doctorLogin.findOne({ emailId });
+    const user = await doctorModel.findOne({ emailId });
     if (!user) {
       return res.status(404).send({
         message: "User not found",

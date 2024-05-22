@@ -48,9 +48,6 @@ const labAuthProfileSchema = new mongoose.Schema(
   }
 );
 
-const labAuthProfile = mongoose.model(
-  "labAuthProfile",
-  labAuthProfileSchema
-);
+const labAuthProfile = mongoose.model("labAuthProfile", labAuthProfileSchema);
 
 module.exports = labAuthProfile;

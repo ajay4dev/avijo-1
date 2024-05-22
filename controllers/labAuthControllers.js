@@ -1,5 +1,5 @@
 const labAuthModel = require("../models/labAuth");
-const labAuthProfileModel = require("../models/lapAuthPro")
+const labAuthProfileModel = require("../models/lapAuthPro");
 const bcrypt = require("bcrypt");
 const { sendOTPEmail } = require("../helper/emailOtp");
 const { sendOTP } = require("../helper/sendotp");
@@ -76,7 +76,6 @@ const labAuthVerify = async (req, res) => {
         message: "User not found",
       });
     }
-
 
     const isEmailOTPMatch = await bcrypt.compare(
       emailOTP.toString(),
@@ -220,5 +219,5 @@ module.exports = {
   labAuthCreate,
   labAuthVerify,
   labAuthLogin,
-  labAuthProfile
+  labAuthProfile,
 };

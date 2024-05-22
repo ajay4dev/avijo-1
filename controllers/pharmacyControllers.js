@@ -162,7 +162,6 @@ const pharmacyVerify = async (req, res) => {
       });
     }
 
-  
     const isMobileOTPMatch = await bcrypt.compare(
       mobileOTP.toString(),
       user.mobileOTP

@@ -53,9 +53,10 @@ const jwt = require("jsonwebtoken");
 
 const registerUser = async (req, res) => {
   try {
-    const { 
+    const {
       // fullName, email, dateOfBirth,
-       mobileNumber } = req.body;
+      mobileNumber,
+    } = req.body;
 
     const existingUser = await register.findOne({ mobileNumber });
 
@@ -126,8 +127,6 @@ const loginUser = async (req, res) => {
     });
   }
 };
-
-
 const verifyOTP = async (req, res) => {
   try {
     const { fullName, email, dateOfBirth, mobileNumber, otp } = req.body;
@@ -135,7 +134,9 @@ const verifyOTP = async (req, res) => {
     const user = await register.findOne({ mobileNumber });
 
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
     // Compare the provided OTP with the hashed OTP stored in the database
@@ -165,7 +166,6 @@ const verifyOTP = async (req, res) => {
   }
 };
 
-
 const verifyOTPAndLogin = async (req, res) => {
   try {
     const { mobileNumber, otp } = req.body;
@@ -191,7 +191,7 @@ const verifyOTPAndLogin = async (req, res) => {
     const token = jwt.sign(
       { userId: existingUser._id, mobileNumber: existingUser.mobileNumber },
       process.env.JWT_SECRET_KEY, // Use an environment variable for the secret key
-      { expiresIn: '1h' } // Token expiration time
+      { expiresIn: "1h" } // Token expiration time
     );
 
     return res.status(200).json({
@@ -208,11 +208,9 @@ const verifyOTPAndLogin = async (req, res) => {
   }
 };
 
-
-
 module.exports = {
   registerUser,
   verifyOTP,
   loginUser,
-  verifyOTPAndLogin
+  verifyOTPAndLogin,
 };

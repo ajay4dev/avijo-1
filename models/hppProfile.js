@@ -18,15 +18,15 @@ const hppProfileSchema = new mongoose.Schema(
       type: String,
     },
     companyLegalName: {
-        type: String,
-      },
+      type: String,
+    },
     gstNo: {
       type: String,
     },
     panNo: {
       type: String,
     },
-   
+
     addressLineNo1: {
       type: String,
     },
@@ -43,26 +43,23 @@ const hppProfileSchema = new mongoose.Schema(
       type: String,
     },
     countryRegion: {
-        type: String,
-      },
-      bankAccountName: {
-        type: String,
-      },
-      bankAccountNumber: {
-        type: String,
-      },
-      IfscCode: {
-        type: String,
-      },
+      type: String,
+    },
+    bankAccountName: {
+      type: String,
+    },
+    bankAccountNumber: {
+      type: String,
+    },
+    IfscCode: {
+      type: String,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-const hppProfile = mongoose.model(
-  "hppProfile",
-  hppProfileSchema
-);
+const hppProfile = mongoose.model("hppProfile", hppProfileSchema);
 
 module.exports = hppProfile;

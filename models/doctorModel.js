@@ -18,10 +18,10 @@ const doctorScehma = new mongoose.Schema(
       type: String,
       default: false,
     },
-     verifyStatus : {
-        type : Boolean,
-        default : false
-     },
+    verifyStatus: {
+      type: Boolean,
+      default: false,
+    },
     emailOTP: {
       type: String,
     },

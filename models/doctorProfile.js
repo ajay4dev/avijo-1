@@ -2,9 +2,9 @@ const mongoose = require("mongoose");
 
 // Define schema
 const doctorProfileSchema = new mongoose.Schema({
-  title: { type: String  },
+  title: { type: String },
   specialization: { type: String },
-  experience: { type: Number  },
+  experience: { type: Number },
   gender: { type: String, enum: ["Male", "Female", "Other"] },
   dateOfBirth: { type: Date },
   degree: { type: String },
@@ -13,11 +13,11 @@ const doctorProfileSchema = new mongoose.Schema({
   city: { type: String },
   colonyStreetLocality: { type: String },
   country: { type: String },
-  pinCode: { type: String},
+  pinCode: { type: String },
   state: { type: String },
   registrationNumber: { type: String },
   registrationCouncil: { type: String },
-  registrationYear: { type: Number  },
+  registrationYear: { type: Number },
 });
 
 // Create model

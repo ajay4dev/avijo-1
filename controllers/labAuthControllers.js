@@ -159,9 +159,9 @@ const labAuthProfile = async (req, res) => {
   try {
     const {
       businessName,
-      yourName,
-      email,
-      phone,
+      fullName, 
+      emailId,   
+      mobileNumber,  
       gstNo,
       panNo,
       register,
@@ -170,27 +170,29 @@ const labAuthProfile = async (req, res) => {
       cityDistrict,
       pincode,
       state,
-    } = req.body;
-
+    } = req.body;    
+    // Validate required fields
     if (
       !businessName ||
-      !yourName ||
-      !email ||
-      !phone ||
+      !fullName ||
+      !emailId ||
+      !mobileNumber ||
       !addressLineNo1 ||
       !cityDistrict ||
       !pincode ||
       !state
     ) {
       return res.status(400).send({
-        message: "All fields are required",
+        message: "All required fields must be provided",
       });
     }
-    const newlapAuth = new labAuthProfileModel({
+
+    // Create a new LabAuth document
+    const newLabAuth = new labAuthModel({
       businessName,
-      yourName,
-      email,
-      phone,
+      fullName,
+      emailId,
+      mobileNumber,
       gstNo,
       panNo,
       register,
@@ -200,12 +202,12 @@ const labAuthProfile = async (req, res) => {
       pincode,
       state,
     });
-
-    await newlapAuth.save();
+    // Save the document to the database
+    await newLabAuth.save();
 
     res.status(200).send({
-      message: "Pharmacy Profile Created Successfully",
-      data: newlapAuth,
+      message: "Lab Profile Created Successfully",
+      data: newLabAuth,
     });
   } catch (error) {
     res.status(500).send({
@@ -214,6 +216,7 @@ const labAuthProfile = async (req, res) => {
     });
   }
 };
+
 
 module.exports = {
   labAuthCreate,

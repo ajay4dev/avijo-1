@@ -219,7 +219,7 @@ const doctorProfileCreate = async (req, res) => {
         message: "All fields are required",
       });
     }
-    const newPharmacyProfile = new doctorProfileModel({
+    const newPharmacyProfile = new doctorModel({
       title,
       specialization,
       experience,

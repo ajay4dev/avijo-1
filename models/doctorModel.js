@@ -4,19 +4,15 @@ const doctorScehma = new mongoose.Schema(
   {
     fullName: {
       type: String,
-      default: false,
     },
     emailId: {
       type: String,
-      default: false,
     },
     password: {
       type: String,
-      default: false,
     },
     mobileNumber: {
       type: String,
-      default: false,
     },
     verifyStatus: {
       type: Boolean,
@@ -28,6 +24,22 @@ const doctorScehma = new mongoose.Schema(
     mobileOTP: {
       type: String,
     },
+    title: { type: String },
+    specialization: { type: String },
+    experience: { type: Number },
+    gender: { type: String, enum: ["Male", "Female", "Other"] },
+    dateOfBirth: { type: Date },
+    degree: { type: String },
+    collegeUniversity: { type: String },
+    year: { type: Number },
+    city: { type: String },
+    colonyStreetLocality: { type: String },
+    country: { type: String },
+    pinCode: { type: String },
+    state: { type: String },
+    registrationNumber: { type: String },
+    registrationCouncil: { type: String },
+    registrationYear: { type: Number },
   },
   {
     timestamps: true,

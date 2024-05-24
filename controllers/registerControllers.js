@@ -95,7 +95,7 @@ const registerUser = async (req, res) => {
   } catch (error) {
     console.error(error);
 
-    // // Handle MongoDB duplicate key error
+    // Handle MongoDB duplicate key error
     if (error.code === 11000) {
       const field = Object.keys(error.keyPattern)[0];
       return res.status(400).json({

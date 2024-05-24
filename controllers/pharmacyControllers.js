@@ -240,10 +240,13 @@ const pharmacyLogin = async (req, res) => {
 const pharmacyProfile = async (req, res) => {
   try {
     const {
+      fullName,  
+      emailId,   
+      mobileNumber, 
       businessName,
-      yourName,
-      email,
-      phone,
+      businessTitle, 
+      drugLicenceNo, 
+      fssaiLicenceNo, 
       gstNo,
       panNo,
       register,
@@ -256,23 +259,28 @@ const pharmacyProfile = async (req, res) => {
 
     if (
       !businessName ||
-      !yourName ||
-      !email ||
-      !phone ||
+      !fullName || 
+      !emailId || 
+      !mobileNumber || 
+      !drugLicenceNo || 
       !addressLineNo1 ||
       !cityDistrict ||
       !pincode ||
       !state
     ) {
       return res.status(400).send({
-        message: "All fields are required",
+        message: "All required fields must be filled",
       });
     }
-    const newPharmacyProfile = new pharmacyProfileModel({
+
+    const newPharmacyProfile = new pharmacyModel({
+      fullName,  
+      emailId,   
+      mobileNumber, 
       businessName,
-      yourName,
-      email,
-      phone,
+      businessTitle, 
+      drugLicenceNo, 
+      fssaiLicenceNo, 
       gstNo,
       panNo,
       register,

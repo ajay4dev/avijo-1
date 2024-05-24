@@ -162,72 +162,75 @@ const hppAuthCreate = async (req, res) => {
   const hppAuthProfile = async (req, res) => {
     try {
       const {
-      businessName,
-      yourName,
-      email,
-      phone,
-      companyLegalName,
-      gstNo,
-      panNo,
-      addressLineNo1,
-      addressLineNo2,
-      cityDistrict,
-      pincode,
-      state,
-      countryRegion,
-      bankAccountName,
-      bankAccountNumber,
-      IfscCode,
+        businessName,
+        fullName,
+        emailId,
+        mobileNumber,
+        companyLegalName,
+        gstNo,
+        panNo,
+        addressLineNo1,
+        addressLineNo2,
+        cityDistrict,
+        pincode,
+        state,
+        countryRegion,
+        bankAccountName,
+        bankAccountNumber,
+        ifscCode,
       } = req.body;
   
+      // Validate required fields
       if (
         !businessName ||
-        !yourName ||
-        !email ||
-        !phone ||
+        !fullName ||
+        !emailId ||
+        !mobileNumber ||
         !companyLegalName ||
-         ! gstNo ||
-          ! panNo ||
+        !gstNo ||
+        !panNo ||
         !addressLineNo1 ||
         !cityDistrict ||
         !pincode ||
         !state ||
-        !  countryRegion  ||
-         ! bankAccountName ||
-          ! bankAccountNumber ||
-         ! IfscCode
+        !countryRegion ||
+        !bankAccountName ||
+        !bankAccountNumber ||
+        !ifscCode
       ) {
         return res.status(400).send({
-          message: "All fields are required",
+          message: 'All fields are required',
         });
       }
-      const newhppAuth = new hppAuthProfileModel({
-        yourName,
-      email,
-      phone,
-      companyLegalName,
-      gstNo,
-      panNo,
-      addressLineNo1,
-      addressLineNo2,
-      cityDistrict,
-      pincode,
-      state,
-      countryRegion,
-      bankAccountName,
-      bankAccountNumber,
-      IfscCode,
+  
+      const newHppProfile = new hppModel({
+        businessName,
+        fullName,
+        emailId,
+        mobileNumber,
+        companyLegalName,
+        gstNo,
+        panNo,
+        addressLineNo1,
+        addressLineNo2,
+        cityDistrict,
+        pincode,
+        state,
+        countryRegion,
+        bankAccountName,
+        bankAccountNumber,
+        ifscCode,
       });
   
-      await newhppAuth.save();
+      await newHppProfile.save();
   
       res.status(200).send({
-        message: " Hpp Profile Created Successfully",
-        data: newhppAuth,
+        message: 'Hpp Profile Created Successfully',
+        data: newHppProfile,
       });
     } catch (error) {
       res.status(500).send({
-        message: "Internal Server Error",
+        message: 'Internal Server Error',
         error: error.message,
       });
     }

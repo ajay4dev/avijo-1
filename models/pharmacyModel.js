@@ -4,19 +4,15 @@ const pharmacyScehma = new mongoose.Schema(
   {
     fullName: {
       type: String,
-      default: false,
     },
     emailId: {
       type: String,
-      default: false,
     },
     password: {
       type: String,
-      default: false,
     },
     mobileNumber: {
       type: String,
-      default: false,
     },
     verifyStatus: {
       type: Boolean,
@@ -26,6 +22,43 @@ const pharmacyScehma = new mongoose.Schema(
       type: String,
     },
     mobileOTP: {
+      type: String,
+    },
+    businessName: {
+      type: String,
+    },
+    businessTitle: {
+      type: String,
+    },
+    drugLicenceNo: {
+      type: String,
+    },
+    fssaiLicenceNo: {
+      type: String,
+    },
+    gstNo: {
+      type: String,
+    },
+    panNo: {
+      type: String,
+    },
+    register: {
+      type: String,
+      enum: ["ucs", "nonGstRegistered"],
+    },
+    addressLineNo1: {
+      type: String,
+    },
+    addressLineNo2: {
+      type: String,
+    },
+    cityDistrict: {
+      type: String,
+    },
+    pincode: {
+      type: Number,
+    },
+    state: {
       type: String,
     },
   },

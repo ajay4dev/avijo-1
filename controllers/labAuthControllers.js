@@ -172,20 +172,20 @@ const labAuthProfile = async (req, res) => {
       state,
     } = req.body;    
     // Validate required fields
-    if (
-      !businessName ||
-      !fullName ||
-      !emailId ||
-      !mobileNumber ||
-      !addressLineNo1 ||
-      !cityDistrict ||
-      !pincode ||
-      !state
-    ) {
-      return res.status(400).send({
-        message: "All required fields must be provided",
-      });
-    }
+    // if (
+    //   !businessName ||
+    //   !fullName ||
+    //   !emailId ||
+    //   !mobileNumber ||
+    //   !addressLineNo1 ||
+    //   !cityDistrict ||
+    //   !pincode ||
+    //   !state
+    // ) {
+    //   return res.status(400).send({
+    //     message: "All required fields must be provided",
+    //   });
+    // }
 
     // Create a new LabAuth document
     const newLabAuth = new labAuthModel({

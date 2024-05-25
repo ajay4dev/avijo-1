@@ -181,27 +181,27 @@ const hppAuthCreate = async (req, res) => {
       } = req.body;
   
       // Validate required fields
-      if (
-        !businessName ||
-        !fullName ||
-        !emailId ||
-        !mobileNumber ||
-        !companyLegalName ||
-        !gstNo ||
-        !panNo ||
-        !addressLineNo1 ||
-        !cityDistrict ||
-        !pincode ||
-        !state ||
-        !countryRegion ||
-        !bankAccountName ||
-        !bankAccountNumber ||
-        !ifscCode
-      ) {
-        return res.status(400).send({
-          message: 'All fields are required',
-        });
-      }
+      // if (
+      //   !businessName ||
+      //   !fullName ||
+      //   !emailId ||
+      //   !mobileNumber ||
+      //   !companyLegalName ||
+      //   !gstNo ||
+      //   !panNo ||
+      //   !addressLineNo1 ||
+      //   !cityDistrict ||
+      //   !pincode ||
+      //   !state ||
+      //   !countryRegion ||
+      //   !bankAccountName ||
+      //   !bankAccountNumber ||
+      //   !ifscCode
+      // ) {
+      //   return res.status(400).send({
+      //     message: 'All fields are required',
+      //   });
+      // }
   
       const newHppProfile = new hppModel({
         businessName,

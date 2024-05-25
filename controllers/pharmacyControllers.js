@@ -257,21 +257,21 @@ const pharmacyProfile = async (req, res) => {
       state,
     } = req.body;
 
-    if (
-      !businessName ||
-      !fullName || 
-      !emailId || 
-      !mobileNumber || 
-      !drugLicenceNo || 
-      !addressLineNo1 ||
-      !cityDistrict ||
-      !pincode ||
-      !state
-    ) {
-      return res.status(400).send({
-        message: "All required fields must be filled",
-      });
-    }
+    // if (
+    //   !businessName ||
+    //   !fullName || 
+    //   !emailId || 
+    //   !mobileNumber || 
+    //   !drugLicenceNo || 
+    //   !addressLineNo1 ||
+    //   !cityDistrict ||
+    //   !pincode ||
+    //   !state
+    // ) {
+    //   return res.status(400).send({
+    //     message: "All required fields must be filled",
+    //   });
+    // }
 
     const newPharmacyProfile = new pharmacyModel({
       fullName,  

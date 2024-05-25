@@ -8,6 +8,7 @@ const sendOTP = async (to, otp) => {
       from: process.env.TWILIO_PHONE_NUMBER,
       to: `+91${to}`,
     });
+
     console.log(`OTP sent successfully. SID: ${message.sid}`);
   } catch (error) {
     console.error('Error sending OTP:', error);
@@ -15,6 +16,7 @@ const sendOTP = async (to, otp) => {
     return { message: `Error sending OTP: ${error.message}` };
   }
 };
+
 
 
 module.exports = { sendOTP };

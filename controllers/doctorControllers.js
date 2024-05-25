@@ -179,6 +179,7 @@ const doctorLogin = async (req, res) => {
 const doctorProfileCreate = async (req, res) => {
   try {
     const {
+      fullName,
       title,
       specialization,
       experience,
@@ -197,29 +198,30 @@ const doctorProfileCreate = async (req, res) => {
       registrationYear,
     } = req.body;
 
-    if (
-      !title ||
-      !specialization ||
-      !experience ||
-      !gender ||
-      !dateOfBirth ||
-      !degree ||
-      !collegeUniversity ||
-      !year ||
-      !city ||
-      !colonyStreetLocality ||
-      !country ||
-      !pinCode ||
-      !state ||
-      !registrationNumber ||
-      !registrationCouncil ||
-      !registrationYear
-    ) {
-      return res.status(400).send({
-        message: "All fields are required",
-      });
-    }
+    // if (
+    //   !title ||
+    //   !specialization ||
+    //   !experience ||
+    //   !gender ||
+    //   !dateOfBirth ||
+    //   !degree ||
+    //   !collegeUniversity ||
+    //   !year ||
+    //   !city ||
+    //   !colonyStreetLocality ||
+    //   !country ||
+    //   !pinCode ||
+    //   !state ||
+    //   !registrationNumber ||
+    //   !registrationCouncil ||
+    //   !registrationYear
+    // ) {
+    //   return res.status(400).send({
+    //     message: "All fields are required",
+    //   });
+    // }
     const newPharmacyProfile = new doctorModel({
+      fullName,
       title,
       specialization,
       experience,

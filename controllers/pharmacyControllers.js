@@ -162,13 +162,11 @@ const pharmacyVerify = async (req, res) => {
       });
     }
 
-    const isMobileOTPMatch = await bcrypt.compare(
-      mobileOTP.toString(),
-      user.mobileOTP
-    );
+     const isEmailOTPMatch = await bcrypt.compare(emailOTP.toString(), user.emailOTP);
+    const isMobileOTPMatch = await bcrypt.compare(mobileOTP.toString(), user.mobileOTP)
 
     // Check if the provided OTPs match the ones saved in the database
-    if (!isEmailOTPMatch || !isMobileOTPMatch) {
+    if ( !isEmailOTPMatch || !isMobileOTPMatch) {
       return res.status(400).send({
         message: "Invalid OTP",
       });

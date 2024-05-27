@@ -11,6 +11,6 @@ const router = express.Router();
 router.post("/labAuthCreate", labAuthCreate);
 router.post("/labVerifyOTP", labAuthVerify);
 router.post("/labAuthLogin", labAuthLogin);
-router.post("/labAuthProfile", labAuthProfile)
+router.post("/labAuthProfile", labAuthProfile);
 
 module.exports = router;

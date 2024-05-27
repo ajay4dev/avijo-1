@@ -20,6 +20,7 @@ const {
 } = require("../controllers/doctorControllers");
 const multerConfig = require("../config/multerConfig");
 const cloudinaryConfig = require("../config/cloudinaryConfig");
+const { createContact } = require("../controllers/contact");
 
 const router = express.Router();
 
@@ -31,8 +32,6 @@ router.post("/login", loginUser);
 router.post("/verifyLogin", verifyOTPAndLogin);
 
 
-
-
 router.post("/pharmacyCreate", pharmacyCreate);
 router.post("/pharmacyVerify", pharmacyVerify);
 router.post("/pharmacyLogin", pharmacyLogin);
@@ -42,6 +41,9 @@ router.post("/doctorCreate", doctorCreate);
 router.post("/doctorVerify", doctorVerify);
 router.post("/doctorLogin", doctorLogin);
 router.post("/doctorProfile", doctorProfileCreate);
+
+
+router.post("/contact", createContact)
 
 // Configure Cloudinary
 cloudinaryConfig();

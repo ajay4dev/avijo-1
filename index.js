@@ -4,8 +4,8 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const userRoutes = require("./routes/userRoutes");
 const labAuthRoutes = require("./routes/lapAuthRoutes");
-const hppAuthRoutes = require ("./routes/hppAuthRoute")
-const doctorConsultationRoutes = require ("./routes/doctorConsultationRoutes")
+const hppAuthRoutes = require("./routes/hppAuthRoute");
+const doctorConsultationRoutes = require("./routes/doctorConsultationRoutes");
 
 const multer = require("multer");
 const cloudinary = require("cloudinary").v2;
@@ -21,7 +21,7 @@ const PORT = 6060;
 app.use(cors());
 
 connectDB();
-   
+
 app.use(bodyParser.json());
 
 cloudinary.config({
@@ -49,8 +49,6 @@ app.use("/user", userRoutes);
 app.use("/labAuth", labAuthRoutes);
 app.use("/hppAuth", hppAuthRoutes);
 app.use("/ConsultationAuth", doctorConsultationRoutes);
-
-
 
 app.get("/", (req, res) => {
   res.json({

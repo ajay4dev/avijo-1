@@ -1,5 +1,4 @@
 const pharmacyModel = require("../models/pharmacyModel");
-const pharmacyProfileModel = require("../models/pharmacyProfileModel");
 const bcrypt = require("bcrypt");
 const { sendOTPEmail } = require("../helper/emailOtp");
 const { sendOTP } = require("../helper/sendotp");

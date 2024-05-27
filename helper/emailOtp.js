@@ -9,7 +9,7 @@ const sendOTPEmail = async (emailId, otp) => {
       pass: "scirznintzokugvr",
     },
   });
-  console.log(transporter);
+  // console.log(transporter);
 
   const info = await transporter.sendMail({
     from: "ur.ajayk@gmail.com",

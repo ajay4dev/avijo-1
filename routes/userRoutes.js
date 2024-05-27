@@ -31,7 +31,6 @@ router.post("/verify", verifyOTP);
 router.post("/login", loginUser);
 router.post("/verifyLogin", verifyOTPAndLogin);
 
-
 router.post("/pharmacyCreate", pharmacyCreate);
 router.post("/pharmacyVerify", pharmacyVerify);
 router.post("/pharmacyLogin", pharmacyLogin);
@@ -42,14 +41,12 @@ router.post("/doctorVerify", doctorVerify);
 router.post("/doctorLogin", doctorLogin);
 router.post("/doctorProfile", doctorProfileCreate);
 
-
-router.post("/contact", createContact)
+router.post("/contact", createContact);
 
 // Configure Cloudinary
 cloudinaryConfig();
 
 // Route for uploading an image
 router.post("/upload", multerConfig.single("image"), uploadImage);
-
 
 module.exports = router;

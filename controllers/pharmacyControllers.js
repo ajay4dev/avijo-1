@@ -105,7 +105,7 @@ const pharmacyCreate = async (req, res) => {
       verifyStatus,
     });
 
-    await newUser.save();
+    // await newUser.save();
 
     return res.status(200).send({
       message: "OTP sent for verification",

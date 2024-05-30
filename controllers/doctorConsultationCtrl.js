@@ -1,7 +1,5 @@
 const doctorConsultationModel = require("../models/doctorConsultationModel");
 
-
-
 const doctorConsultationCreate = async (req, res)  => {
     try {
         const { speciality, symptom, healthProblem } = req.body;
@@ -31,7 +29,6 @@ const doctorConsultationCreate = async (req, res)  => {
         });
       }
 }
-
 module.exports = {
     doctorConsultationCreate
 }

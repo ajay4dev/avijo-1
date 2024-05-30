@@ -24,34 +24,35 @@ const labAuthScehma = new mongoose.Schema(
     mobileOTP: {
       type: String,
     },
-    businessName: {
-      type: String,
-    },
-    gstNo: {
-      type: String,
-    },
-    panNo: {
-      type: String,
-    },
-    register: {
-      type: String,
-      enum: ["ucs", "nonGstRegistered"],
-    },
-    addressLineNo1: {
-      type: String,
-    },
-    addressLineNo2: {
-      type: String,
-    },
-    cityDistrict: {
-      type: String,
-    },
-    pincode: {
-      type: Number,
-    },
-    state: {
-      type: String,
-    },
+
+    // businessName: {
+    //   type: String,
+    // },
+    // gstNo: {
+    //   type: String,
+    // },
+    // panNo: {
+    //   type: String,
+    // },
+    // register: {
+    //   type: String,
+    //   enum: ["ucs", "nonGstRegistered"],
+    // },
+    // addressLineNo1: {
+    //   type: String,
+    // },
+    // addressLineNo2: {
+    //   type: String,
+    // },
+    // cityDistrict: {
+    //   type: String,
+    // },
+    // pincode: {
+    //   type: Number,
+    // },
+    // state: {
+    //   type: String,
+    // },
   },
   {
     timestamps: true,

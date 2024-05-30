@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 // Define schema
 const doctorProfileSchema = new mongoose.Schema({
+  fullName: { type: String },
   title: { type: String },
   specialization: { type: String },
   experience: { type: Number },

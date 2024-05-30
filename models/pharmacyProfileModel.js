@@ -5,16 +5,13 @@ const pharmacyProfileSchema = new mongoose.Schema(
     businessName: {
       type: String,
     },
-
-    yourName: {
+    fullName: {
       type: String,
     },
-
-    email: {
+    emailId: {
       type: String,
     },
-
-    phone: {
+    mobileNumber: {
       type: String,
     },
     gstNo: {

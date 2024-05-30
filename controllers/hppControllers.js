@@ -1,4 +1,5 @@
 const hppModel = require("../models/hppModel");
+const hppProfileModel = require("../models/hppProfile");
 const bcrypt = require("bcrypt");
 const { sendOTPEmail } = require("../helper/emailOtp");
 const { sendOTP } = require("../helper/sendotp");
@@ -226,7 +227,7 @@ const hppAuthProfile = async (req, res) => {
     //   });
     // }
 
-    const newHppProfile = new hppModel({
+    const newHppProfile = new hppProfileModel({
       businessName,
       fullName,
       emailId,
@@ -259,4 +260,144 @@ const hppAuthProfile = async (req, res) => {
   }
 };
 
-module.exports = { hppAuthCreate, hppAuthVerify, hppAuthLogin, hppAuthProfile };
+const getHppProfileById = async (req, res) => {
+  try {
+    const { id } = req.body;
+
+    // Find the hpp profile by ID
+    const hppProfile = await hppProfileModel.findById(id);
+
+    if (!hppProfile) {
+      return res.status(404).send({
+        message: "Hpp Profile not found",
+      });
+    }
+
+    res.status(200).send({
+      message: "Hpp Profile Retrieved Successfully",
+      data: hppProfile,
+    });
+  } catch (error) {
+    res.status(500).send({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+const getAllHppProfile = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const totalHpp = await hppProfileModel.countDocuments();
+    const totalPages = Math.ceil(totalHpp / limit);
+    // Fetch all doctor profiles from the database
+    const hppProfiles = await hppProfileModel.find().skip(skip).limit(limit);
+    // Extract IDs and other profile details
+    // const doctorProfileData = doctorProfiles.map(profile => ({
+    //   _id: profile._id,
+    //   fullName: profile.fullName,
+    //   // Add other profile details here as needed
+    // }));
+
+    res.status(200).send({
+      message: "Hpp Profile IDs Retrieved Successfully",
+      data: hppProfiles,
+      page,
+      totalPages,
+      totalHpp,
+    });
+  } catch (error) {
+    res.status(500).send({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+const hppProfileUpdate = async (req, res) => {
+  try {
+    const { 
+      id,
+      businessName,
+      fullName,
+      emailId,
+      mobileNumber,
+      companyLegalName,
+      gstNo,
+      panNo,
+      addressLineNo1,
+      addressLineNo2,
+      cityDistrict,
+      pincode,
+      state,
+      countryRegion,
+      bankAccountName,
+      bankAccountNumber,
+      ifscCode,
+     } = req.body;
+
+     const updatedHppProfile = await hppProfileModel.findByIdAndUpdate(id, {
+      businessName,
+      fullName,
+      emailId,
+      mobileNumber,
+      companyLegalName,
+      gstNo,
+      panNo,
+      addressLineNo1,
+      addressLineNo2,
+      cityDistrict,
+      pincode,
+      state,
+      countryRegion,
+      bankAccountName,
+      bankAccountNumber,
+      ifscCode,
+     }, {new : true});
+
+     res.status(200).send({
+      message: "Hpp Profile Updated Successfully",
+      data: updatedHppProfile,
+    });
+  } catch (error) {
+    res.status(500).send({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+}
+
+const hppProfileDelete = async (req, res) => {
+  try {
+    const { id } = req.body;
+
+    const  deletedHppProfile  = await hppProfileModel.findByIdAndDelete(id);
+    if(!deletedHppProfile) {
+      return res.status(404).send({
+        message: "Hpp Profile not found",
+      })
+    }
+    res.status(200).send({
+      message: "Hpp Profile Deleted Successfully",
+      data: deletedHppProfile,
+    }) 
+  } catch (error) {
+    res.status(500).send({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+module.exports = {
+  hppAuthCreate,
+  hppAuthVerify,
+  hppAuthLogin,
+  hppAuthProfile,
+  getHppProfileById,
+  getAllHppProfile,
+  hppProfileUpdate,
+  hppProfileDelete
+};

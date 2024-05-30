@@ -6,15 +6,15 @@ const hppProfileSchema = new mongoose.Schema(
       type: String,
     },
 
-    yourName: {
+    fullName: {
       type: String,
     },
 
-    email: {
+    emailId: {
       type: String,
     },
 
-    phone: {
+    mobileNumber: {
       type: String,
     },
     companyLegalName: {

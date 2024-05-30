@@ -1,5 +1,6 @@
 const pharmacyModel = require("../models/pharmacyModel");
-const bcrypt = require("bcrypt")
+const pharmacyProfileModel = require("../models/pharmacyProfileModel");
+const bcrypt = require("bcrypt");
 const { sendOTPEmail } = require("../helper/emailOtp");
 const { sendOTP } = require("../helper/sendotp");
 const jwt = require("jsonwebtoken");
@@ -28,7 +29,6 @@ const pharmacyCreate = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
 
     // const hashedPassword = await bcrypt.hash(password, salt);
-
     const emailOTP = generateOTP();
     const hashedEmailOTP = await bcrypt.hash(emailOTP.toString(), salt);
     await sendOTPEmail(emailId, emailOTP);
@@ -208,7 +208,7 @@ const pharmacyProfile = async (req, res) => {
     //   });
     // }
 
-    const newPharmacyProfile = new pharmacyModel({
+    const newPharmacyProfile = new pharmacyProfileModel({
       fullName,
       emailId,
       mobileNumber,
@@ -256,10 +256,143 @@ const uploadImage = async (req, res) => {
   }
 };
 
+const getPharmacyProfileById = async (req, res) => {
+  try {
+    const { id } = req.body;
+
+    // Find the Pharmacy profile by ID
+    const pharmacyProfile = await pharmacyProfileModel.findById(id);
+
+    if (!pharmacyProfile) {
+      return res.status(404).send({
+        message: "pharmacy Profile not found",
+      });
+    }
+
+    res.status(200).send({
+      message: "pharmacy Profile Retrieved Successfully",
+      data: pharmacyProfile,
+    });
+  } catch (error) {
+    res.status(500).send({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+const getAllPharmacyProfile = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const totalPharmacy = await pharmacyProfileModel.countDocuments();
+    const totalPages = Math.ceil(totalPharmacy / limit);
+    // Fetch all pharmacy profiles from the database
+    const pharmacyProfiles = await pharmacyProfileModel
+      .find()
+      .skip(skip)
+      .limit(limit);
+    // Extract IDs and other profile details
+    // const doctorProfileData = pharmacyProfileModel.map(profile => ({
+    //   _id: profile._id,
+    //   fullName: profile.fullName,
+    //   // Add other profile details here as needed
+    // }));
+
+    res.status(200).send({
+      message: "pharmacy Profile IDs Retrieved Successfully",
+      data: pharmacyProfiles,
+      page,
+      totalPages,
+      totalPharmacy,
+    });
+  } catch (error) {
+    res.status(500).send({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+const pharmacyProfileUpdate = async (req , res) => {
+  try {
+    const {
+      id,
+      fullName,
+      emailId,
+      mobileNumber,
+      businessName,
+      businessTitle,
+      drugLicenceNo,
+      fssaiLicenceNo,
+      gstNo,
+      panNo,
+      register,
+      addressLineNo1,
+      addressLineNo2,
+      cityDistrict,
+      pincode,
+      state,
+     } = req.body;
+     const pharmacyProfile = await pharmacyProfileModel.findByIdAndUpdate(id , {
+      fullName,
+      emailId,
+      mobileNumber,
+      businessName,
+      businessTitle,
+      drugLicenceNo,
+      fssaiLicenceNo,
+      gstNo,
+      panNo,
+      register,
+      addressLineNo1,
+      addressLineNo2,
+      cityDistrict,
+      pincode,
+      state,
+     } , {new : true});
+     res.status(200).send({
+      message: "Pharmacy Profile Updated Successfully",
+      data: pharmacyProfile,
+    }) 
+  } catch (error) {
+    res.status(500).send({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+const pharmacyProfileDelete = async (req, res) => {
+  try {
+    const { id } = req.body;
+    const  pharmacyProfile  = await pharmacyProfileModel.findByIdAndDelete(id);
+    if(!pharmacyProfile) {
+      return res.status(404).send({
+        message: "Hpp Profile not found",
+      })
+    }
+    res.status(200).send({
+      message: "Hpp Profile Deleted Successfully",
+      data: pharmacyProfile,
+    }) 
+  } catch (error) {
+    res.status(500).send({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   pharmacyCreate,
   pharmacyVerify,
   pharmacyLogin,
   pharmacyProfile,
+  getPharmacyProfileById,
+  getAllPharmacyProfile,
+  pharmacyProfileUpdate,
+  pharmacyProfileDelete,
   uploadImage,
 };

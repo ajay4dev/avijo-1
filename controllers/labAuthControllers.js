@@ -1,4 +1,5 @@
 const labAuthModel = require("../models/labAuth");
+const labAutProfilehModel = require("../models/lapAuthPro");
 const bcrypt = require("bcrypt");
 const { sendOTPEmail } = require("../helper/emailOtp");
 const { sendOTP } = require("../helper/sendotp");
@@ -203,7 +204,7 @@ const labAuthProfile = async (req, res) => {
     // }
 
     // Create a new LabAuth document
-    const newLabAuth = new labAuthModel({
+    const newLabAuth = new labAutProfilehModel({
       businessName,
       fullName,
       emailId,
@@ -232,9 +233,134 @@ const labAuthProfile = async (req, res) => {
   }
 };
 
+const getLapProfileById = async (req, res) => {
+  try {
+    const { id } = req.body;
+
+    // Find the lab profile by ID
+    const labProfile = await labAutProfilehModel.findById(id);
+
+    if (!labProfile) {
+      return res.status(404).send({
+        message: "lap Profile not found",
+      });
+    }
+
+    res.status(200).send({
+      message: "lap Profile Retrieved Successfully",
+      data: labProfile,
+    });
+  } catch (error) {
+    res.status(500).send({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+const getAllLapProfile = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const totalLap = await labAutProfilehModel.countDocuments();
+    const totalPages = Math.ceil(totalLap / limit);
+    // Fetch all doctor profiles from the database
+    const lapProfiles = await labAutProfilehModel.find().skip(skip).limit(limit);
+    // Extract IDs and other profile details
+    // const doctorProfileData = doctorProfiles.map(profile => ({
+    //   _id: profile._id,
+    //   fullName: profile.fullName,
+    //   // Add other profile details here as needed
+    // }));
+
+    res.status(200).send({
+      message: "Lap Profile IDs Retrieved Successfully",
+      data: lapProfiles,
+      page,
+      totalPages,
+      totalLap,
+    });
+  } catch (error) {
+    res.status(500).send({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+const labAuthProfileUpdate = async (req , res) =>  {
+  try {
+    const {
+      id , 
+      businessName,
+      fullName,
+      emailId,
+      mobileNumber,
+      gstNo,
+      panNo,
+      register,
+      addressLineNo1,
+      addressLineNo2,
+      cityDistrict,
+      pincode,
+      state,
+    } = req.body;
+    const updateLapAuth = await labAutProfilehModel.findByIdAndUpdate(id , {
+      businessName,
+      fullName,
+      emailId,
+      mobileNumber,
+      gstNo,
+      panNo,
+      register,
+      addressLineNo1,
+      addressLineNo2,
+      cityDistrict,
+      pincode,
+      state,
+    }, { new: true});
+
+    res.status(200).send({
+      message: "lap Auth Profile Updated Successfully",
+      data: updateLapAuth,
+    });
+  } catch (error) {
+    res.status(500).send({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+const lapAuthProfileDelete = async (req, res) => {
+  try {
+    const { id } = req.body;
+    const  deletedLapAuthProfile  = await labAutProfilehModel.findByIdAndDelete(id);
+    if(!deletedLapAuthProfile) {
+      return res.status(404).send({
+        message: "Lap Auth Profile not found",
+      })
+    }
+    res.status(200).send({
+      message: "Lap Auth Profile Deleted Successfully",
+      data: deletedLapAuthProfile,
+    }) 
+  } catch (error) {
+    res.status(500).send({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+
 module.exports = {
   labAuthCreate,
   labAuthVerify,
   labAuthLogin,
   labAuthProfile,
+  getLapProfileById, 
+  getAllLapProfile,
+  labAuthProfileUpdate,
+  lapAuthProfileDelete
 };

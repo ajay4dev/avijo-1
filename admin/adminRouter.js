@@ -1,11 +1,12 @@
 const express = require("express");
-const { adminCreate, adminLogin } = require("./adminController"); // Adjust the path as necessary
-const authMiddleware = require("./authMiddleware"); // Adjust the path as necessary
+const { adminCreate, adminLogin, totalProfile,  } = require("./adminController"); 
+const authMiddleware = require("./authMiddleware");
 
 const router = express.Router();
 
 router.post("/create", adminCreate);
 router.post("/login", adminLogin);
+router.get("/totalProfile", authMiddleware, totalProfile);
 
 // Example of a protected route
 router.get("/protected", authMiddleware, (req, res) => {

@@ -1,4 +1,5 @@
 const doctorModel = require("../models/doctorModel");
+const doctorProfileModel = require("../models/doctorProfile");
 const bcrypt = require("bcrypt");
 const { sendOTPEmail } = require("../helper/emailOtp");
 const { sendOTP } = require("../helper/sendotp");
@@ -217,7 +218,7 @@ const doctorProfileCreate = async (req, res) => {
     //     message: "All fields are required",
     //   });
     // }
-    const newPharmacyProfile = new doctorModel({
+    const newPharmacyProfile = new doctorProfileModel({
       fullName,
       title,
       specialization,
@@ -266,11 +267,150 @@ const doctorImage = async (req, res) => {
   }
 };
 
+const getDoctorProfileById = async (req, res) => {
+  try {
+    const { id } = req.body;
+
+    // Find the doctor profile by ID
+    const doctorProfile = await doctorProfileModel.findById(id);
+
+    if (!doctorProfile) {
+      return res.status(404).send({
+        message: "Doctor Profile not found",
+      });
+    }
+
+    res.status(200).send({
+      message: "Doctor Profile Retrieved Successfully",
+      data: doctorProfile,
+    });
+  } catch (error) {
+    res.status(500).send({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+const getAllDoctorProfileIds = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit ;
+    const totalDoctors = await doctorProfileModel.countDocuments();
+    const totalPages = Math.ceil(totalDoctors / limit);
+    // Fetch all doctor profiles from the database
+    const doctorProfiles = await doctorProfileModel.find().skip(skip).limit(limit);   
+    // Extract IDs and other profile details
+    // const doctorProfileData = doctorProfiles.map(profile => ({
+    //   _id: profile._id,
+    //   fullName: profile.fullName,
+    //   // Add other profile details here as needed
+    // }));
+
+    res.status(200).send({
+      message: "Doctor Profile IDs Retrieved Successfully",
+      data: doctorProfiles,
+      page,
+      totalPages,
+      totalDoctors
+    });
+  } catch (error) {
+    res.status(500).send({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+   /// delete doctorProfileUpdate api
+const  doctorProfileUpdate = async (req, res) => {
+  try {
+    const {
+      fullName,
+      title,
+      specialization,
+      experience,
+      gender,
+      dateOfBirth,
+      degree,
+      collegeUniversity,
+      year,
+      city,
+      colonyStreetLocality,
+      country,
+      pinCode,
+      state,
+      registrationNumber,
+      registrationCouncil,
+      registrationYear,
+    } = req.body;
+     
+    const {id} = req.body;
+    const updatedDoctorProfile = await doctorProfileModel.findByIdAndUpdate(id , {
+      fullName,
+      title,
+      specialization,
+      experience,
+      gender,
+      dateOfBirth,
+      degree,
+      collegeUniversity,
+      year,
+      city,
+      colonyStreetLocality,
+      country,
+      pinCode,
+      state,
+      registrationNumber,
+      registrationCouncil,
+      registrationYear,
+    }, 
+     {new : true }
+  );
+  res.status(200).send({
+    message: "Doctor Profile Updated Successfully",
+    data: updatedDoctorProfile,
+  });
+  } catch (error) {
+    res.status(500).send({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+   /// delete doctorProfileDelete api
+const doctorProfileDelete = async (req, res) => {
+  try {
+    const { id } = req.body;
+
+    const  deletedDoctorProfile  = await doctorProfileModel.findByIdAndDelete(id);
+    if(!deletedDoctorProfile) {
+      return res.status(404).send({
+        message: "Doctor Profile not found",
+      })
+    }
+    res.status(200).send({
+      message: "Doctor Profile Deleted Successfully",
+      data: deletedDoctorProfile,
+    }) 
+  } catch (error) {
+    res.status(500).send({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
 
 module.exports = {
   doctorCreate,
   doctorVerify,
   doctorLogin,
   doctorProfileCreate,
+  getDoctorProfileById,
+  getAllDoctorProfileIds,
+  doctorProfileUpdate,
+  doctorProfileDelete,
   doctorImage,
 };

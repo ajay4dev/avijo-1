@@ -7,6 +7,9 @@ const labAuthRoutes = require("./routes/lapAuthRoutes");
 const hppAuthRoutes = require("./routes/hppAuthRoute");
 const doctorConsultationRoutes = require("./routes/doctorConsultationRoutes");
 
+//AdminRouter
+const  adminRouter = require("./admin/adminRouter")
+
 const multer = require("multer");
 const cloudinary = require("cloudinary").v2;
 
@@ -49,6 +52,9 @@ app.use("/user", userRoutes);
 app.use("/labAuth", labAuthRoutes);
 app.use("/hppAuth", hppAuthRoutes);
 app.use("/ConsultationAuth", doctorConsultationRoutes);
+
+//admin url
+app.use("/admin", adminRouter)
 
 app.get("/", (req, res) => {
   res.json({

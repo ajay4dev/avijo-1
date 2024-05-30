@@ -1,5 +1,5 @@
 const pharmacyModel = require("../models/pharmacyModel");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcrypt")
 const { sendOTPEmail } = require("../helper/emailOtp");
 const { sendOTP } = require("../helper/sendotp");
 const jwt = require("jsonwebtoken");
@@ -9,67 +9,10 @@ const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
-// const pharmacyCreate = async (req, res) => {
-//   try {
-//     const { fullName, emailId, password, mobileNumber, emailOTP, mobileOTP } = req.body;
-
-//     // Check if all required fields are provided
-//     if (!fullName || !emailId || !password || !mobileNumber) {
-//       return res.status(400).send({
-//         message: "Please fill all the fields",
-//       });
-//     }
-
-//     // Check if user with the same email already exists
-//     // const existingUser = await pharmacyModel.findOne({ emailId });
-//     // if (existingUser) {
-//     //   return res.status(400).send({
-//     //     message: "User already exists",
-//     //   });
-//     // }
-
-//     // Generate salt and hash the password
-//     const salt = await bcrypt.genSalt(10);
-//     const hashedPassword = await bcrypt.hash(password, salt);
-
-//     // Generate OTP for email verification
-//     const emailVerificationOTP = generateOTP();
-//     await sendOTPEmail(emailId, emailVerificationOTP);
-
-//     // Generate OTP for mobile verification
-//     const mobileVerificationOTP = generateOTP();
-//     await sendOTP(mobileNumber, mobileVerificationOTP);
-
-//     // Create new user instance
-//     const newUser = new pharmacyModel({
-//       fullName,
-//       emailId,
-//       password: hashedPassword,
-//       mobileNumber,
-//       emailOTP: emailVerificationOTP,
-//       mobileOTP: mobileVerificationOTP
-//     });
-
-//     // Save the new user to the database
-//     await newUser.save();
-
-//     return res.status(200).send({
-//       message: "User created successfully",
-//       data: newUser,
-//     });
-//   } catch (error) {
-//     return res.status(500).send({
-//       message: "Internal server error",
-//       error: error.message,
-//     });
-//   }
-// };
-
 const pharmacyCreate = async (req, res) => {
   try {
-    const { fullName, emailId, password, mobileNumber, verifyStatus } =
-      req.body;
-    if (!fullName || !emailId || !password || !mobileNumber) {
+    const { emailId, mobileNumber, verifyStatus } = req.body;
+    if (!emailId || !mobileNumber) {
       return res.status(400).send({
         message: "Please fill all the fields",
       });
@@ -84,7 +27,7 @@ const pharmacyCreate = async (req, res) => {
 
     const salt = await bcrypt.genSalt(10);
 
-    const hashedPassword = await bcrypt.hash(password, salt);
+    // const hashedPassword = await bcrypt.hash(password, salt);
 
     const emailOTP = generateOTP();
     const hashedEmailOTP = await bcrypt.hash(emailOTP.toString(), salt);
@@ -96,9 +39,9 @@ const pharmacyCreate = async (req, res) => {
 
     // Create a new user object with only essential fields
     const newUser = new pharmacyModel({
-      fullName,
+      // fullName,
       emailId,
-      password: hashedPassword,
+      // password: hashedPassword,
       mobileNumber,
       emailOTP: hashedEmailOTP,
       mobileOTP: hashedMobileOTP,
@@ -119,38 +62,10 @@ const pharmacyCreate = async (req, res) => {
   }
 };
 
-// const pharmacyVerify = async (req, res) => {
-//   try {
-//     const { emailId, mobileNumber, emailOTP, mobileOTP } = req.body;
-
-//     // Verify email OTP
-//     const isEmailOTPVerified = await verifyAndDeleteEmailOTP(emailId, emailOTP);
-
-//     // Verify mobile OTP
-//     const isMobileOTPVerified = await verifyAndDeleteMobileOTP(mobileNumber, mobileOTP);
-
-//     if (isEmailOTPVerified && isMobileOTPVerified) {
-//       // Both OTPs are verified
-//       return res.status(200).send({
-//         message: "OTP verification successful",
-//       });
-//     } else {
-//       // If either OTP verification fails
-//       return res.status(400).send({
-//         message: "OTP verification failed",
-//       });
-//     }
-//   } catch (error) {
-//     return res.status(500).send({
-//       message: "Internal server error",
-//       error: error.message,
-//     });
-//   }
-// };
-
 const pharmacyVerify = async (req, res) => {
   try {
-    const { emailId, emailOTP, mobileNumber, mobileOTP } = req.body;
+    const { emailId, emailOTP, mobileNumber, mobileOTP, fullName, password } =
+      req.body;
 
     // Find the user by emailId and mobileNumber
     const user = await pharmacyModel.findOne({ emailId, mobileNumber });
@@ -161,18 +76,27 @@ const pharmacyVerify = async (req, res) => {
       });
     }
 
-    const isEmailOTPMatch = await bcrypt.compare(emailOTP.toString(), user.emailOTP);
-    const isMobileOTPMatch = await bcrypt.compare(mobileOTP.toString(), user.mobileOTP)
+    const isEmailOTPMatch = await bcrypt.compare(
+      emailOTP.toString(),
+      user.emailOTP
+    );
+    const isMobileOTPMatch = await bcrypt.compare(
+      mobileOTP.toString(),
+      user.mobileOTP
+    );
 
     // Check if the provided OTPs match the ones saved in the database
-    if ( !isEmailOTPMatch || !isMobileOTPMatch) {
+    if (!isEmailOTPMatch || !isMobileOTPMatch) {
       return res.status(400).send({
         message: "Invalid OTP",
       });
     }
 
-    // Update verifyStatus to true
+    // Update verifyStatus to true, fullName, and hashed password
     user.verifyStatus = true;
+    user.fullName = fullName;
+    user.password = await bcrypt.hash(password, 10); // Hash the password before saving
+
     await user.save();
 
     return res.status(200).send({
@@ -189,19 +113,29 @@ const pharmacyVerify = async (req, res) => {
 
 const pharmacyLogin = async (req, res) => {
   try {
-    const { emailId, password } = req.body;
-    if (!emailId || !password) {
+    const { emailOrMobile, password } = req.body;
+
+    if (!emailOrMobile || !password) {
       return res.status(400).send({
-        message: "Please provide email and password",
+        message: "Please provide email or mobile number and password",
       });
     }
 
-    const user = await pharmacyModel.findOne({ emailId });
+    // Add logging to debug the input values
+    // console.log('Login attempt with:', emailOrMobile);
+
+    // Find the user by emailId or mobileNumber
+    const user = await pharmacyModel.findOne({
+      $or: [{ emailId: emailOrMobile }, { mobileNumber: emailOrMobile }],
+    });
+
     if (!user) {
       return res.status(404).send({
         message: "User not found",
       });
     }
+
+    // console.log("User found:", user);
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
@@ -210,13 +144,14 @@ const pharmacyLogin = async (req, res) => {
       });
     }
 
-    // if (!user.emailVerified || !user.mobileVerified) {
-    //   return res.status(401).send({
-    //     message: "Email or mobile not verified",
-    //   });
-    // }
+    // Check if the user's email and mobile have been verified
+    if (!user.verifyStatus) {
+      return res.status(401).send({
+        message: "Email or mobile not verified",
+      });
+    }
 
-    // You can generate a JWT token here for authentication
+    // Generate a JWT token for authentication
     const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET_KEY, {
       expiresIn: "7d",
     });
@@ -227,6 +162,9 @@ const pharmacyLogin = async (req, res) => {
       data: user,
     });
   } catch (error) {
+    // Add logging for errors
+    console.error("Error during login:", error);
+
     return res.status(500).send({
       message: "Internal server error",
       error: error.message,
@@ -237,13 +175,13 @@ const pharmacyLogin = async (req, res) => {
 const pharmacyProfile = async (req, res) => {
   try {
     const {
-      fullName,  
-      emailId,   
-      mobileNumber, 
+      fullName,
+      emailId,
+      mobileNumber,
       businessName,
-      businessTitle, 
-      drugLicenceNo, 
-      fssaiLicenceNo, 
+      businessTitle,
+      drugLicenceNo,
+      fssaiLicenceNo,
       gstNo,
       panNo,
       register,
@@ -256,10 +194,10 @@ const pharmacyProfile = async (req, res) => {
 
     // if (
     //   !businessName ||
-    //   !fullName || 
-    //   !emailId || 
-    //   !mobileNumber || 
-    //   !drugLicenceNo || 
+    //   !fullName ||
+    //   !emailId ||
+    //   !mobileNumber ||
+    //   !drugLicenceNo ||
     //   !addressLineNo1 ||
     //   !cityDistrict ||
     //   !pincode ||
@@ -271,13 +209,13 @@ const pharmacyProfile = async (req, res) => {
     // }
 
     const newPharmacyProfile = new pharmacyModel({
-      fullName,  
-      emailId,   
-      mobileNumber, 
+      fullName,
+      emailId,
+      mobileNumber,
       businessName,
-      businessTitle, 
-      drugLicenceNo, 
-      fssaiLicenceNo, 
+      businessTitle,
+      drugLicenceNo,
+      fssaiLicenceNo,
       gstNo,
       panNo,
       register,

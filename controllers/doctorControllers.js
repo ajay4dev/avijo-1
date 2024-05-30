@@ -1,5 +1,4 @@
 const doctorModel = require("../models/doctorModel");
-const doctorProfileModel = require("../models/doctorProfile");
 const bcrypt = require("bcrypt");
 const { sendOTPEmail } = require("../helper/emailOtp");
 const { sendOTP } = require("../helper/sendotp");
@@ -13,8 +12,8 @@ const generateOTP = () => {
 
 const doctorCreate = async (req, res) => {
   try {
-    const { fullName, emailId, password, mobileNumber , verifyStatus} = req.body;
-    if (!fullName || !emailId || !password || !mobileNumber) {
+    const { emailId, mobileNumber, verifyStatus } = req.body;
+    if (!emailId || !mobileNumber) {
       return res.status(400).send({
         message: "Please fill all the fields",
       });
@@ -29,25 +28,25 @@ const doctorCreate = async (req, res) => {
 
     const salt = await bcrypt.genSalt(10);
 
-    const hashedPassword = await bcrypt.hash(password, salt);
+    // const hashedPassword = await bcrypt.hash(password, salt);
 
     const emailOTP = generateOTP();
-     const hashedEmailOTP = await bcrypt.hash(emailOTP.toString(), salt);
+    const hashedEmailOTP = await bcrypt.hash(emailOTP.toString(), salt);
     await sendOTPEmail(emailId, emailOTP);
 
     const mobileOTP = generateOTP();
-    const hashedMobileOTP = await bcrypt.hash(mobileOTP.toString(), salt)
+    const hashedMobileOTP = await bcrypt.hash(mobileOTP.toString(), salt);
     await sendOTP(mobileNumber, mobileOTP);
 
     // Create a new user object with only essential fields
     const newUser = new doctorModel({
-      fullName,
+      // fullName,
       emailId,
-      password: hashedPassword,
+      // password: hashedPassword,
       mobileNumber,
-      emailOTP : hashedEmailOTP,
-      mobileOTP : hashedMobileOTP,
-      verifyStatus
+      emailOTP: hashedEmailOTP,
+      mobileOTP: hashedMobileOTP,
+      verifyStatus,
     });
 
     await newUser.save();
@@ -63,36 +62,11 @@ const doctorCreate = async (req, res) => {
     });
   }
 };
-// const doctorVerify = async (req, res) => {
-//   try {
-//     const { emailOTP, mobileOTP } = req.body;
-
-//     const user = await pharmacyModel.findOneAndUpdate(
-//       { emailOTP, mobileOTP },
-//       { $set: { emailVerified: true, mobileVerified: true } },
-//       { new: true }
-//     );
-//     if (!user) {
-//       return res.status(400).send({
-//         message: "Invalid OTPs",
-//       });
-//     }
-
-//     return res.status(200).send({
-//       message: "User created successfully",
-//       data: user,
-//     });
-//   } catch (error) {
-//     return res.status(500).send({
-//       message: "Internal server error",
-//       error: error.message,
-//     });
-//   }
-// };
 
 const doctorVerify = async (req, res) => {
   try {
-    const { emailId, emailOTP, mobileNumber, mobileOTP } = req.body;
+    const { emailId, emailOTP, mobileNumber, mobileOTP, fullName, password } =
+      req.body;
 
     // Find the user by emailId and mobileNumber
     const user = await doctorModel.findOne({ emailId, mobileNumber });
@@ -103,18 +77,27 @@ const doctorVerify = async (req, res) => {
       });
     }
 
-    const isEmailOTPMatch = await bcrypt.compare(emailOTP.toString(), user.emailOTP);
-    const isMobileOTPMatch = await bcrypt.compare(mobileOTP.toString(), user.mobileOTP)
+    const isEmailOTPMatch = await bcrypt.compare(
+      emailOTP.toString(),
+      user.emailOTP
+    );
+    const isMobileOTPMatch = await bcrypt.compare(
+      mobileOTP.toString(),
+      user.mobileOTP
+    );
 
     // Check if the provided OTPs match the ones saved in the database
-    if ( !isEmailOTPMatch || !isMobileOTPMatch) {
+    if (!isEmailOTPMatch || !isMobileOTPMatch) {
       return res.status(400).send({
         message: "Invalid OTP",
       });
     }
 
-    // Update verifyStatus to true
+    // Update verifyStatus to true, fullName, and hashed password
     user.verifyStatus = true;
+    user.fullName = fullName;
+    user.password = await bcrypt.hash(password, 10); // Hash the password before saving
+
     await user.save();
 
     return res.status(200).send({
@@ -131,19 +114,29 @@ const doctorVerify = async (req, res) => {
 
 const doctorLogin = async (req, res) => {
   try {
-    const { emailId, password } = req.body;
-    if (!emailId || !password) {
+    const { emailOrMobile, password } = req.body;
+
+    if (!emailOrMobile || !password) {
       return res.status(400).send({
-        message: "Please provide email and password",
+        message: "Please provide email or mobile number and password",
       });
     }
 
-    const user = await doctorModel.findOne({ emailId });
+    // Add logging to debug the input values
+    // console.log('Login attempt with:', emailOrMobile);
+
+    // Find the user by emailId or mobileNumber
+    const user = await doctorModel.findOne({
+      $or: [{ emailId: emailOrMobile }, { mobileNumber: emailOrMobile }],
+    });
+
     if (!user) {
       return res.status(404).send({
         message: "User not found",
       });
     }
+
+    // console.log("User found:", user);
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
@@ -152,13 +145,14 @@ const doctorLogin = async (req, res) => {
       });
     }
 
-    // if (!user.emailVerified || !user.mobileVerified) {
-    //   return res.status(401).send({
-    //     message: "Email or mobile not verified",
-    //   });
-    // }
+    // Check if the user's email and mobile have been verified
+    if (!user.verifyStatus) {
+      return res.status(401).send({
+        message: "Email or mobile not verified",
+      });
+    }
 
-    // You can generate a JWT token here for authentication
+    // Generate a JWT token for authentication
     const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET_KEY, {
       expiresIn: "7d",
     });
@@ -169,6 +163,9 @@ const doctorLogin = async (req, res) => {
       data: user,
     });
   } catch (error) {
+    // Add logging for errors
+    console.error("Error during login:", error);
+
     return res.status(500).send({
       message: "Internal server error",
       error: error.message,
@@ -269,10 +266,11 @@ const doctorImage = async (req, res) => {
   }
 };
 
+
 module.exports = {
   doctorCreate,
   doctorVerify,
   doctorLogin,
   doctorProfileCreate,
-  doctorImage
+  doctorImage,
 };

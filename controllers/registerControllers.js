@@ -156,7 +156,7 @@ const verifyOTP = async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
-    // Compare the provided OTP with the hashed OTP stored in the database
+      // Compare the provided OTP with the hashed OTP stored in the database
     const isOTPMatch = await bcrypt.compare(otp.toString(), user.otp);
 
     if (isOTPMatch) {

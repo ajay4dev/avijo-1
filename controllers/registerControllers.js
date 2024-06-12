@@ -111,7 +111,6 @@ const registerUser = async (req, res) => {
   }
 };
 
-
 const loginUser = async (req, res) => {
   try {
     const { mobileNumber } = req.body;
@@ -156,7 +155,7 @@ const verifyOTP = async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
-      // Compare the provided OTP with the hashed OTP stored in the database
+    // Compare the provided OTP with the hashed OTP stored in the database
     const isOTPMatch = await bcrypt.compare(otp.toString(), user.otp);
 
     if (isOTPMatch) {
@@ -225,9 +224,116 @@ const verifyOTPAndLogin = async (req, res) => {
   }
 };
 
+const getUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find the User profile by ID
+    const userProfile = await register.findById(id);
+
+    if (!userProfile) {
+      return res.status(404).send({
+        message: "User Profile not found",
+      });
+    }
+
+    res.status(200).send({
+      message: "User Profile Retrieved Successfully",
+      data: userProfile,
+    });
+  } catch (error) {
+    res.status(500).send({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+const getAllUserProfile = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const totalUser = await register.countDocuments();
+    const totalPages = Math.ceil(totalUser / limit);
+    // Fetch all user profiles from the database
+    const userProfiles = await register.find().skip(skip).limit(limit);
+    // Extract IDs and other profile details
+    // const doctorProfileData = register.map(profile => ({
+    //   _id: profile._id,
+    //   fullName: profile.fullName,
+    //   // Add other profile details here as needed
+    // }));
+
+    res.status(200).send({
+      message: "user Profile IDs Retrieved Successfully",
+      data: userProfiles,
+      page,
+      totalPages,
+      totalUser,
+    });
+  } catch (error) {
+    res.status(500).send({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+const userProfileUpdate = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const { fullName, email, dateOfBirth, mobileNumber } = req.body;
+
+    const user = await register.findByIdAndUpdate(
+      id,
+      {
+        fullName,
+        email,
+        dateOfBirth,
+        mobileNumber,
+      },
+      { new: true }
+    );
+    res.status(200).send({
+      message: "User Profile Updated Successfully",
+      data: user,
+    });
+  } catch (error) {
+    res.status(500).send({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+const userProfileDelete = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userProfile = await register.findByIdAndDelete(id);
+    if (!userProfile) {
+      return res.status(404).send({
+        message: "User Profile not found",
+      });
+    }
+    res.status(200).send({
+      message: "User Profile Deleted Successfully",
+      data: userProfile,
+    });
+  } catch (error) {
+    res.status(500).send({
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   registerUser,
   verifyOTP,
   loginUser,
   verifyOTPAndLogin,
+  getUserById,
+  getAllUserProfile,
+  userProfileUpdate,
+  userProfileDelete,
 };

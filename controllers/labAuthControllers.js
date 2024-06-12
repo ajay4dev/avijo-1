@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const { sendOTPEmail } = require("../helper/emailOtp");
 const { sendOTP } = require("../helper/sendotp");
 const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
 
 const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -171,6 +172,68 @@ const labAuthLogin = async (req, res) => {
     });
   }
 };
+
+const forgetPassword = async (req, res) => {
+  const { emailId } = req.body;
+  try {
+    const user = await labAuthModel.findOne({ emailId });
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+
+    // Send email
+    const transporter = nodemailer.createTransport({
+      service: "Gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const resetUrl = `https://www.avijo.in/labAuth/reset-password/${user._id}`;
+
+    const mailOptions = {
+      to: user.emailId,
+      from: process.env.EMAIL_USER,
+      subject: "Password Reset",
+      text: `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n
+      Please click on the following link, or paste this into your browser to complete the process:\n\n
+      ${resetUrl}\n\n
+      If you did not request this, please ignore this email and your password will remain unchanged.\n`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).send("Password reset email sent");
+  } catch (err) {
+    res.status(500).send({
+      message: "Server error",
+      error: err.message,
+    });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  const { id } = req.params;
+  const { password } = req.body;
+  try {
+    const user = await labAuthModel.findById(id);
+    if (!user) {
+      return res.status(400).send("Invalid user ID");
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    user.password = hashedPassword;
+    await user.save();
+    res.status(200).send("Password has been reset");
+  } catch (error) {
+    res.status(500).send({
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
+
 const labAuthProfile = async (req, res) => {
   try {
     const {
@@ -235,7 +298,7 @@ const labAuthProfile = async (req, res) => {
 
 const getLapProfileById = async (req, res) => {
   try {
-    const { id } = req.body;
+    const { id } = req.params;
 
     // Find the lab profile by ID
     const labProfile = await labAutProfilehModel.findById(id);
@@ -266,7 +329,10 @@ const getAllLapProfile = async (req, res) => {
     const totalLap = await labAutProfilehModel.countDocuments();
     const totalPages = Math.ceil(totalLap / limit);
     // Fetch all doctor profiles from the database
-    const lapProfiles = await labAutProfilehModel.find().skip(skip).limit(limit);
+    const lapProfiles = await labAutProfilehModel
+      .find()
+      .skip(skip)
+      .limit(limit);
     // Extract IDs and other profile details
     // const doctorProfileData = doctorProfiles.map(profile => ({
     //   _id: profile._id,
@@ -288,10 +354,11 @@ const getAllLapProfile = async (req, res) => {
     });
   }
 };
-const labAuthProfileUpdate = async (req , res) =>  {
+const labAuthProfileUpdate = async (req, res) => {
+  const { id } = req.params;
+
   try {
     const {
-      id , 
       businessName,
       fullName,
       emailId,
@@ -305,20 +372,24 @@ const labAuthProfileUpdate = async (req , res) =>  {
       pincode,
       state,
     } = req.body;
-    const updateLapAuth = await labAutProfilehModel.findByIdAndUpdate(id , {
-      businessName,
-      fullName,
-      emailId,
-      mobileNumber,
-      gstNo,
-      panNo,
-      register,
-      addressLineNo1,
-      addressLineNo2,
-      cityDistrict,
-      pincode,
-      state,
-    }, { new: true});
+    const updateLapAuth = await labAutProfilehModel.findByIdAndUpdate(
+      id,
+      {
+        businessName,
+        fullName,
+        emailId,
+        mobileNumber,
+        gstNo,
+        panNo,
+        register,
+        addressLineNo1,
+        addressLineNo2,
+        cityDistrict,
+        pincode,
+        state,
+      },
+      { new: true }
+    );
 
     res.status(200).send({
       message: "lap Auth Profile Updated Successfully",
@@ -334,17 +405,19 @@ const labAuthProfileUpdate = async (req , res) =>  {
 
 const lapAuthProfileDelete = async (req, res) => {
   try {
-    const { id } = req.body;
-    const  deletedLapAuthProfile  = await labAutProfilehModel.findByIdAndDelete(id);
-    if(!deletedLapAuthProfile) {
+    const { id } = req.params;
+    const deletedLapAuthProfile = await labAutProfilehModel.findByIdAndDelete(
+      id
+    );
+    if (!deletedLapAuthProfile) {
       return res.status(404).send({
         message: "Lap Auth Profile not found",
-      })
+      });
     }
     res.status(200).send({
       message: "Lap Auth Profile Deleted Successfully",
       data: deletedLapAuthProfile,
-    }) 
+    });
   } catch (error) {
     res.status(500).send({
       message: "Internal Server Error",
@@ -353,14 +426,15 @@ const lapAuthProfileDelete = async (req, res) => {
   }
 };
 
-
 module.exports = {
   labAuthCreate,
   labAuthVerify,
   labAuthLogin,
+  forgetPassword,
+  resetPassword,
   labAuthProfile,
-  getLapProfileById, 
+  getLapProfileById,
   getAllLapProfile,
   labAuthProfileUpdate,
-  lapAuthProfileDelete
+  lapAuthProfileDelete,
 };

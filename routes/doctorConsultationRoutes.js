@@ -1,10 +1,13 @@
 const express = require("express");
-const { doctorConsultationCreate } = require("../controllers/doctorConsultationCtrl");
+const { doctorConsultationCreate, createPayment, verifyPayment, generateAgoraToken } = require("../controllers/doctorConsultationCtrl");
 
 
 const router = express.Router();
 
 router.post("/doctorConsultationCreate", doctorConsultationCreate)
+router.post("/agoraToken" , generateAgoraToken)
+router.post("/payment", createPayment);
+router.post("/verifyPayment", verifyPayment )
 
 
 

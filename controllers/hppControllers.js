@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const { sendOTPEmail } = require("../helper/emailOtp");
 const { sendOTP } = require("../helper/sendotp");
 const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
 
 const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -183,6 +184,67 @@ const hppAuthLogin = async (req, res) => {
   }
 };
 
+const forgetPassword = async (req, res) => {
+  const { emailId } = req.body;
+  try {
+    const user = await hppModel.findOne({ emailId });
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+
+    // Send email
+    const transporter = nodemailer.createTransport({
+      service: "Gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const resetUrl = `https://www.avijo.in/hppAuth/reset-password/${user._id}`;
+
+    const mailOptions = {
+      to: user.emailId,
+      from: process.env.EMAIL_USER,
+      subject: "Password Reset",
+      text: `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n
+      Please click on the following link, or paste this into your browser to complete the process:\n\n
+      ${resetUrl}\n\n
+      If you did not request this, please ignore this email and your password will remain unchanged.\n`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).send("Password reset email sent");
+  } catch (err) {
+    res.status(500).send({
+      message: "Server error",
+      error: err.message,
+    });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  const { id } = req.params;
+  const { password } = req.body;
+  try {
+    const user = await hppModel.findById(id);
+    if (!user) {
+      return res.status(400).send("Invalid user ID");
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    user.password = hashedPassword;
+    await user.save();
+    res.status(200).send("Password has been reset");
+  } catch (error) {
+    res.status(500).send({
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
+
 const hppAuthProfile = async (req, res) => {
   try {
     const {
@@ -262,7 +324,7 @@ const hppAuthProfile = async (req, res) => {
 
 const getHppProfileById = async (req, res) => {
   try {
-    const { id } = req.body;
+    const { id } = req.params;
 
     // Find the hpp profile by ID
     const hppProfile = await hppProfileModel.findById(id);
@@ -317,47 +379,52 @@ const getAllHppProfile = async (req, res) => {
 };
 
 const hppProfileUpdate = async (req, res) => {
+  const { id } = req.params;
+
   try {
-    const { 
+    const {
+      businessName,
+      fullName,
+      emailId,
+      mobileNumber,
+      companyLegalName,
+      gstNo,
+      panNo,
+      addressLineNo1,
+      addressLineNo2,
+      cityDistrict,
+      pincode,
+      state,
+      countryRegion,
+      bankAccountName,
+      bankAccountNumber,
+      ifscCode,
+    } = req.body;
+
+    const updatedHppProfile = await hppProfileModel.findByIdAndUpdate(
       id,
-      businessName,
-      fullName,
-      emailId,
-      mobileNumber,
-      companyLegalName,
-      gstNo,
-      panNo,
-      addressLineNo1,
-      addressLineNo2,
-      cityDistrict,
-      pincode,
-      state,
-      countryRegion,
-      bankAccountName,
-      bankAccountNumber,
-      ifscCode,
-     } = req.body;
+      {
+        businessName,
+        fullName,
+        emailId,
+        mobileNumber,
+        companyLegalName,
+        gstNo,
+        panNo,
+        addressLineNo1,
+        addressLineNo2,
+        cityDistrict,
+        pincode,
+        state,
+        countryRegion,
+        bankAccountName,
+        bankAccountNumber,
+        ifscCode,
+      },
+      { new: true }
+    );
 
-     const updatedHppProfile = await hppProfileModel.findByIdAndUpdate(id, {
-      businessName,
-      fullName,
-      emailId,
-      mobileNumber,
-      companyLegalName,
-      gstNo,
-      panNo,
-      addressLineNo1,
-      addressLineNo2,
-      cityDistrict,
-      pincode,
-      state,
-      countryRegion,
-      bankAccountName,
-      bankAccountNumber,
-      ifscCode,
-     }, {new : true});
-
-     res.status(200).send({
+    res.status(200).send({
       message: "Hpp Profile Updated Successfully",
       data: updatedHppProfile,
     });
@@ -367,22 +434,22 @@ const hppProfileUpdate = async (req, res) => {
       error: error.message,
     });
   }
-}
+};
 
 const hppProfileDelete = async (req, res) => {
   try {
-    const { id } = req.body;
+    const { id } = req.params;
 
-    const  deletedHppProfile  = await hppProfileModel.findByIdAndDelete(id);
-    if(!deletedHppProfile) {
+    const deletedHppProfile = await hppProfileModel.findByIdAndDelete(id);
+    if (!deletedHppProfile) {
       return res.status(404).send({
         message: "Hpp Profile not found",
-      })
+      });
     }
     res.status(200).send({
       message: "Hpp Profile Deleted Successfully",
       data: deletedHppProfile,
-    }) 
+    });
   } catch (error) {
     res.status(500).send({
       message: "Internal Server Error",
@@ -395,9 +462,11 @@ module.exports = {
   hppAuthCreate,
   hppAuthVerify,
   hppAuthLogin,
+  forgetPassword,
+  resetPassword,
   hppAuthProfile,
   getHppProfileById,
   getAllHppProfile,
   hppProfileUpdate,
-  hppProfileDelete
+  hppProfileDelete,
 };

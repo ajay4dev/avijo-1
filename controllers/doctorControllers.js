@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const { sendOTPEmail } = require("../helper/emailOtp");
 const { sendOTP } = require("../helper/sendotp");
 const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
 
 // const cloudinary = require('../config/cloudinaryConfig');
 
@@ -174,6 +175,68 @@ const doctorLogin = async (req, res) => {
   }
 };
 
+const forgetPassword = async (req, res) => {
+  const { emailId } = req.body;
+  try {
+    const user = await doctorModel.findOne({ emailId });
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+
+    // Send email
+    const transporter = nodemailer.createTransport({
+      service: "Gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const resetUrl = `https://www.avijo.in/doctor/reset-password/${user._id}`;
+
+    const mailOptions = {
+      to: user.emailId,
+      from: process.env.EMAIL_USER,
+      subject: "Password Reset",
+      text: `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n
+      Please click on the following link, or paste this into your browser to complete the process:\n\n
+      ${resetUrl}\n\n
+      If you did not request this, please ignore this email and your password will remain unchanged.\n`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).send("Password reset email sent");
+  } catch (err) {
+    res.status(500).send({
+      message: "Server error",
+      error: err.message,
+    });
+  }
+};
+
+
+const resetPassword = async (req, res) => {
+  const { id } = req.params;
+  const { password } = req.body;
+  try {
+    const user = await doctorModel.findById(id);
+    if (!user) {
+      return res.status(400).send("Invalid user ID");
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    user.password = hashedPassword;
+    await user.save();
+    res.status(200).send("Password has been reset");
+  } catch (error) {
+    res.status(500).send({
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
+
 const doctorProfileCreate = async (req, res) => {
   try {
     const {
@@ -218,7 +281,7 @@ const doctorProfileCreate = async (req, res) => {
     //     message: "All fields are required",
     //   });
     // }
-    const newPharmacyProfile = new doctorProfileModel({
+    const newDoctorProfile = new doctorProfileModel({
       fullName,
       title,
       specialization,
@@ -238,11 +301,11 @@ const doctorProfileCreate = async (req, res) => {
       registrationYear,
     });
 
-    await newPharmacyProfile.save();
+    await newDoctorProfile.save();
 
     res.status(200).send({
       message: "Doctor Profile Created Successfully",
-      data: newPharmacyProfile,
+      data: newDoctorProfile,
     });
   } catch (error) {
     res.status(500).send({
@@ -269,7 +332,7 @@ const doctorImage = async (req, res) => {
 
 const getDoctorProfileById = async (req, res) => {
   try {
-    const { id } = req.body;
+    const { id } = req.params;
 
     // Find the doctor profile by ID
     const doctorProfile = await doctorProfileModel.findById(id);
@@ -296,11 +359,14 @@ const getAllDoctorProfileIds = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit ;
+    const skip = (page - 1) * limit;
     const totalDoctors = await doctorProfileModel.countDocuments();
     const totalPages = Math.ceil(totalDoctors / limit);
     // Fetch all doctor profiles from the database
-    const doctorProfiles = await doctorProfileModel.find().skip(skip).limit(limit);   
+    const doctorProfiles = await doctorProfileModel
+      .find()
+      .skip(skip)
+      .limit(limit);
     // Extract IDs and other profile details
     // const doctorProfileData = doctorProfiles.map(profile => ({
     //   _id: profile._id,
@@ -313,7 +379,7 @@ const getAllDoctorProfileIds = async (req, res) => {
       data: doctorProfiles,
       page,
       totalPages,
-      totalDoctors
+      totalDoctors,
     });
   } catch (error) {
     res.status(500).send({
@@ -323,8 +389,8 @@ const getAllDoctorProfileIds = async (req, res) => {
   }
 };
 
-   /// delete doctorProfileUpdate api
-const  doctorProfileUpdate = async (req, res) => {
+/// update doctorProfileUpdate api
+const doctorProfileUpdate = async (req, res) => {
   try {
     const {
       fullName,
@@ -345,33 +411,35 @@ const  doctorProfileUpdate = async (req, res) => {
       registrationCouncil,
       registrationYear,
     } = req.body;
-     
-    const {id} = req.body;
-    const updatedDoctorProfile = await doctorProfileModel.findByIdAndUpdate(id , {
-      fullName,
-      title,
-      specialization,
-      experience,
-      gender,
-      dateOfBirth,
-      degree,
-      collegeUniversity,
-      year,
-      city,
-      colonyStreetLocality,
-      country,
-      pinCode,
-      state,
-      registrationNumber,
-      registrationCouncil,
-      registrationYear,
-    }, 
-     {new : true }
-  );
-  res.status(200).send({
-    message: "Doctor Profile Updated Successfully",
-    data: updatedDoctorProfile,
-  });
+
+    const { id } = req.params;
+    const updatedDoctorProfile = await doctorProfileModel.findByIdAndUpdate(
+      id,
+      {
+        fullName,
+        title,
+        specialization,
+        experience,
+        gender,
+        dateOfBirth,
+        degree,
+        collegeUniversity,
+        year,
+        city,
+        colonyStreetLocality,
+        country,
+        pinCode,
+        state,
+        registrationNumber,
+        registrationCouncil,
+        registrationYear,
+      },
+      { new: true }
+    );
+    res.status(200).send({
+      message: "Doctor Profile Updated Successfully",
+      data: updatedDoctorProfile,
+    });
   } catch (error) {
     res.status(500).send({
       message: "Internal Server Error",
@@ -380,21 +448,21 @@ const  doctorProfileUpdate = async (req, res) => {
   }
 };
 
-   /// delete doctorProfileDelete api
+/// delete doctorProfileDelete api
 const doctorProfileDelete = async (req, res) => {
   try {
-    const { id } = req.body;
+    const { id } = req.params;
 
-    const  deletedDoctorProfile  = await doctorProfileModel.findByIdAndDelete(id);
-    if(!deletedDoctorProfile) {
+    const deletedDoctorProfile = await doctorProfileModel.findByIdAndDelete(id);
+    if (!deletedDoctorProfile) {
       return res.status(404).send({
         message: "Doctor Profile not found",
-      })
+      });
     }
     res.status(200).send({
       message: "Doctor Profile Deleted Successfully",
       data: deletedDoctorProfile,
-    }) 
+    });
   } catch (error) {
     res.status(500).send({
       message: "Internal Server Error",
@@ -407,6 +475,8 @@ module.exports = {
   doctorCreate,
   doctorVerify,
   doctorLogin,
+  forgetPassword,
+  resetPassword,
   doctorProfileCreate,
   getDoctorProfileById,
   getAllDoctorProfileIds,

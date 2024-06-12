@@ -1,12 +1,10 @@
 const nodemailer = require("nodemailer");
 const sendOTPEmail = async (emailId, otp) => {
-
-
   const transporter = nodemailer.createTransport({
     service: "Gmail",
     auth: {
-      user: "ur.ajayk@gmail.com",
-      pass: "scirznintzokugvr",
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
     },
   });
   // console.log(transporter);
@@ -19,9 +17,6 @@ const sendOTPEmail = async (emailId, otp) => {
   });
 
   console.log("Email sent: %s", info.messageId);
-
-
-
 };
 
 module.exports = {

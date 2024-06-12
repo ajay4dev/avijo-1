@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const { sendOTPEmail } = require("../helper/emailOtp");
 const { sendOTP } = require("../helper/sendotp");
 const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
 const cloudinary = require("cloudinary").v2;
 
 const generateOTP = () => {
@@ -172,6 +173,70 @@ const pharmacyLogin = async (req, res) => {
   }
 };
 
+const forgetPassword = async (req, res) => {
+  const { emailId } = req.body;
+  try {
+    const user = await pharmacyModel.findOne({ emailId });
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+
+    // Generate token with JWT
+    // const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
+
+    // Send email
+    const transporter = nodemailer.createTransport({
+      service: "Gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const resetUrl = `https://www.avijo.in/pharmacy/reset-password/${user._id}`;
+
+    const mailOptions = {
+      to: user.emailId,
+      from: process.env.EMAIL_USER,
+      subject: "Password Reset",
+      text: `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n
+      Please click on the following link, or paste this into your browser to complete the process:\n\n
+      ${resetUrl}\n\n
+      If you did not request this, please ignore this email and your password will remain unchanged.\n`,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).send("Password reset email sent");
+  } catch (err) {
+    res.status(500).send({
+      message: "Server error",
+      error: err.message,
+    });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  const { id } = req.params;
+  const { password } = req.body;
+  try {
+    const user = await pharmacyModel.findById(id);
+    if (!user) {
+      return res.status(400).send("Invalid user ID");
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    user.password = hashedPassword;
+    await user.save();
+    res.status(200).send("Password has been reset");
+  } catch (error) {
+    res.status(500).send({
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
+
 const pharmacyProfile = async (req, res) => {
   try {
     const {
@@ -258,7 +323,7 @@ const uploadImage = async (req, res) => {
 
 const getPharmacyProfileById = async (req, res) => {
   try {
-    const { id } = req.body;
+    const { id } = req.params;
 
     // Find the Pharmacy profile by ID
     const pharmacyProfile = await pharmacyProfileModel.findById(id);
@@ -315,47 +380,52 @@ const getAllPharmacyProfile = async (req, res) => {
   }
 };
 
-const pharmacyProfileUpdate = async (req , res) => {
+const pharmacyProfileUpdate = async (req, res) => {
+  const { id } = req.params;
   try {
     const {
+      fullName,
+      emailId,
+      mobileNumber,
+      businessName,
+      businessTitle,
+      drugLicenceNo,
+      fssaiLicenceNo,
+      gstNo,
+      panNo,
+      register,
+      addressLineNo1,
+      addressLineNo2,
+      cityDistrict,
+      pincode,
+      state,
+    } = req.body;
+
+    const pharmacyProfile = await pharmacyProfileModel.findByIdAndUpdate(
       id,
-      fullName,
-      emailId,
-      mobileNumber,
-      businessName,
-      businessTitle,
-      drugLicenceNo,
-      fssaiLicenceNo,
-      gstNo,
-      panNo,
-      register,
-      addressLineNo1,
-      addressLineNo2,
-      cityDistrict,
-      pincode,
-      state,
-     } = req.body;
-     const pharmacyProfile = await pharmacyProfileModel.findByIdAndUpdate(id , {
-      fullName,
-      emailId,
-      mobileNumber,
-      businessName,
-      businessTitle,
-      drugLicenceNo,
-      fssaiLicenceNo,
-      gstNo,
-      panNo,
-      register,
-      addressLineNo1,
-      addressLineNo2,
-      cityDistrict,
-      pincode,
-      state,
-     } , {new : true});
-     res.status(200).send({
+      {
+        fullName,
+        emailId,
+        mobileNumber,
+        businessName,
+        businessTitle,
+        drugLicenceNo,
+        fssaiLicenceNo,
+        gstNo,
+        panNo,
+        register,
+        addressLineNo1,
+        addressLineNo2,
+        cityDistrict,
+        pincode,
+        state,
+      },
+      { new: true }
+    );
+    res.status(200).send({
       message: "Pharmacy Profile Updated Successfully",
       data: pharmacyProfile,
-    }) 
+    });
   } catch (error) {
     res.status(500).send({
       message: "Internal Server Error",
@@ -366,17 +436,17 @@ const pharmacyProfileUpdate = async (req , res) => {
 
 const pharmacyProfileDelete = async (req, res) => {
   try {
-    const { id } = req.body;
-    const  pharmacyProfile  = await pharmacyProfileModel.findByIdAndDelete(id);
-    if(!pharmacyProfile) {
+    const { id } = req.params;
+    const pharmacyProfile = await pharmacyProfileModel.findByIdAndDelete(id);
+    if (!pharmacyProfile) {
       return res.status(404).send({
-        message: "Hpp Profile not found",
-      })
+        message: "Pharmacy Profile not found",
+      });
     }
     res.status(200).send({
-      message: "Hpp Profile Deleted Successfully",
+      message: "Pharmacy Profile Deleted Successfully",
       data: pharmacyProfile,
-    }) 
+    });
   } catch (error) {
     res.status(500).send({
       message: "Internal Server Error",
@@ -394,5 +464,7 @@ module.exports = {
   getAllPharmacyProfile,
   pharmacyProfileUpdate,
   pharmacyProfileDelete,
+  forgetPassword,
+  resetPassword,
   uploadImage,
 };

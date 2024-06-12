@@ -8,6 +8,8 @@ const {
   getAllLapProfile,
   labAuthProfileUpdate,
   lapAuthProfileDelete,
+  forgetPassword,
+  resetPassword,
 } = require("../controllers/labAuthControllers");
 const adminAuth = require("../admin/authMiddleware");
 
@@ -18,9 +20,11 @@ router.post("/labAuthCreate", labAuthCreate);
 router.post("/labVerifyOTP", labAuthVerify);
 router.post("/labAuthLogin", labAuthLogin);
 router.post("/labAuthProfile", labAuthProfile);
-router.get("/getById",adminAuth, getLapProfileById);
+router.post("/forgetPassword", forgetPassword);
+router.post("/resetPassword/:id",  resetPassword);
+router.get("/getById/:id",adminAuth, getLapProfileById);
 router.get("/getAllApi", adminAuth,getAllLapProfile);
-router.put("/labAuthProfileUpdate", labAuthProfileUpdate);
-router.delete("/lapAuthProfileDelete", lapAuthProfileDelete)
+router.put("/labAuthProfileUpdate/:id",adminAuth, labAuthProfileUpdate);
+router.delete("/lapAuthProfileDelete/:id",adminAuth, lapAuthProfileDelete)
 
 module.exports = router;

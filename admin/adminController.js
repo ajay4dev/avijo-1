@@ -1,8 +1,9 @@
 const adminModel = require('./adminModel');
 const doctorProfileModel = require("../models/doctorProfile");
 const hppProfileModel = require("../models/hppProfile");
-const labAutProfilehModel = require("../models/lapAuthPro")
+const labAutProfilehModel = require("../models/lapAuthPro");
 const pharmacyProfileModel = require("../models/pharmacyProfileModel");
+const userRegisterModel = require("../models/registerModel");
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
@@ -49,7 +50,7 @@ const adminLogin = async (req, res) => {
     }
 
     const token = jwt.sign({ id: adminUser._id, role: adminUser.role }, process.env.JWT_SECRET_KEY, {
-      expiresIn: '1h',
+      expiresIn: '7d',
     });
 
     return res.status(200).send({
@@ -66,6 +67,7 @@ const adminLogin = async (req, res) => {
 
 const totalProfile = async (req, res) => {
   try {
+    const totalUser = await userRegisterModel.countDocuments();
     const totalDoctors = await doctorProfileModel.countDocuments();
     const totalHpp = await hppProfileModel.countDocuments();
     const totalLap = await labAutProfilehModel.countDocuments();
@@ -73,6 +75,7 @@ const totalProfile = async (req, res) => {
     // Send the response with the counts
     return res.status(200).send({
       message: "Profile counts retrieved successfully",
+      totalUser,
       totalDoctors,
       totalHpp,
       totalLap, 
